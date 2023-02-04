@@ -19,7 +19,7 @@ class Sleep:
             sleep_event_list.append(new_event2)
 
         # creates ImmutableEvent objects for sleep during the week end
-        for i in range(2):
+        for i in range(5, 7):
             new_event1 = ImmutableEvent(i, 0000, self.wd_wakeup_time, "Sleep")
             new_event2 = ImmutableEvent(i, self.wd_sleep_time, 2400, "Sleep")
             sleep_event_list.append(new_event1)
