@@ -11,7 +11,7 @@ class Schedule:
         for day in self.week:
             curtime = 0
             for time in day:
-                if time:
+                if time!= None and time != "Break":
                     print("Day is " + str(date) + " and time block is " + str(curtime) + " and the name is " + time.name)
                 # else:
                 #     print(str(day) + str(time) + "break")

@@ -3,6 +3,7 @@ from schedule import Schedule
 from meals import Meals
 from tasks import Task
 from sleep import Sleep
+from alert import Alert
 import copy
 
 
@@ -14,6 +15,7 @@ class CalculateSchedule:
         self.schedule = Schedule()
         self.week = self.schedule.week
         self.sleep = sleep
+        self.alerts = []
     
 
     def create_schedule(self):
@@ -29,7 +31,23 @@ class CalculateSchedule:
         end_box = self.time_to_box_number(event.end_time)
         # print("start box is " + str(start_box))
         # print("end box is " + str(end_box))
-        for box in range(start_box, end_box):
+        starting_break_box = self.time_to_box_number(event.start_time - 10)
+        if(starting_break_box != start_box):
+            if(self.week[event.day_of_week][starting_break_box] == None):
+                self.week[event.day_of_week][starting_break_box] = "Break"
+            else:
+                new_alert = Alert(event, -1)
+                self.alerts.append(new_alert)
+        
+        ending_break_box = self.time_to_box_number(event.end_time + 10)
+        if(ending_break_box != end_box):
+            if(self.week[event.day_of_week][ending_break_box] == None):
+                self.week[event.day_of_week][ending_break_box] = "Break"
+            elif self.week[event.day_of_week][ending_break_box] != "Break":
+                new_alert = Alert(event, 1)
+                self.alerts.append(new_alert)
+
+        for box in range(start_box, end_box):  
             self.week[event.day_of_week][box] = event
             
 
@@ -79,8 +97,13 @@ class CalculateSchedule:
             tasks_with_deadline[earliest_deadline] = second_deadline
         # input the task into the weekly schedule based on deadline
         for t in range(0, len(tasks_with_deadline)):
+            break_from_first = False
+            break_from_second = False
             num_boxes = self.time_to_box_number(tasks_with_deadline[t].time_needed)
+            if num_boxes == 0:
+                num_boxes += 1
             for d in range(0, len(self.week)):
+                num_boxes = self.time_to_box_number(tasks_with_deadline[t].time_needed)
                 for time in range(0, len(self.week[d])):
                     run_tasks_deadline = True
                     initial_time = 0
@@ -99,14 +122,25 @@ class CalculateSchedule:
                         run_tasks_deadline = False
                     if run_tasks_deadline:
                         tasks_with_deadline[t].start_time = initial_time * 30
-                        tasks_with_deadline[t].end_time = time * 30
+                        tasks_with_deadline[t].end_time = tasks_with_deadline[t].start_time + tasks_with_deadline[t].time_needed
                         tasks_with_deadline[t].day_of_week = d
                         for j in range(initial_time, time + 1):
                             self.week[d][j] = tasks_with_deadline[t]
-        for t in range(len(tasks_without_deadline)):
+                        break_from_first = True
+                        break_from_second = True
+                    if break_from_first == True:
+                        break
+                if break_from_second == True:
+                    break
+        for t in range(0, len(tasks_without_deadline)):
+            break_from_first = False
+            break_from_second = False
             num_boxes = self.time_to_box_number(tasks_without_deadline[t].time_needed)
-            for d in range(len(self.week)):
-                for time in range(len(self.week[d])):
+            if num_boxes == 0:
+                num_boxes += 1
+            for d in range(0, len(self.week)):
+                for time in range(0, len(self.week[d])):
+                    num_boxes = self.time_to_box_number(tasks_without_deadline[t].time_needed)
                     run_tasks_deadline = True
                     initial_time = 0
                     if self.week[d][time] == None:
@@ -124,10 +158,16 @@ class CalculateSchedule:
                         run_tasks_deadline = False
                     if run_tasks_deadline:
                         tasks_without_deadline[t].start_time = initial_time * 30
-                        tasks_without_deadline[t].end_time = time * 30
-                        tasks_with_deadline[t].day_of_week = d
+                        tasks_without_deadline[t].end_time = tasks_without_deadline[t].start_time + tasks_without_deadline[t].time_needed
+                        tasks_without_deadline[t].day_of_week = d
                         for j in range(initial_time, time + 1):
                             self.week[d][j] = tasks_without_deadline[t]
+                        break_from_first = True
+                        break_from_second = True
+                    if break_from_first == True:
+                        break
+                if break_from_second == True:
+                    break
             
 
     def time_to_box_number(self, time):
@@ -137,7 +177,7 @@ class CalculateSchedule:
         answer_list = []
         for day in self.week:
             for time in day:
-                if time:
+                if time != None and time != "Break":
                     answer_list.append(time)
         index = 1
         while(index < len(answer_list)):
@@ -152,7 +192,7 @@ if __name__ == "__main__":
     events = [ImmutableEvent(0, 900, 1000, "work"), ImmutableEvent(5, 1250, 1300, "work again")]
     sleep = [420, 1320, 540, 1320]
     meals = [Meals(570, 600, "Breakfast"), Meals(780, 840, "Lunch"), Meals(1200, 1230, "Dinner")]
-    tasks = [Task(60, "to-do-2", 4), Task(120, "to-do-1", 1), Task(15, "to-do-last"), Task(200, "to-do-last"), Task(30, "to-do-3", 6)] 
+    tasks = [Task(60, "to-do-2", 4), Task(120, "to-do-1", 1), Task(15, "to-do-last-1"), Task(200, "to-do-last-2"), Task(30, "to-do-3", 6)] 
 
 
     test_schedule = CalculateSchedule(events, tasks, meals, sleep)

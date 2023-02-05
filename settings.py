@@ -4,7 +4,7 @@ pygame.font.init()
 WIDTH = 864
 HEIGHT = 600
 
-TITLE = "test"
+TITLE = "Schedulizer"
 
 WHITE_SPACE = 0.05
 
@@ -29,5 +29,10 @@ ORANGE = (255, 151, 112)
 DARK_BLUE = (45, 48, 71)
 LIME = (144, 233, 58)
 LIGHTER_DARK_BLUE = (55, 58, 87)
+
+LIGHT_PINK = tuple(max(x + 20, 255) for x in PINK)
+LIGHT_BLUE = tuple(max(x + 20, 255) for x in BLUE)
+LIGHT_ORANGE = tuple(max(x + 20, 255) for x in ORANGE)
+LIGHT_LIME = tuple(max(x + 20, 255) for x in LIME)
 
 BACKGROUND = DARK_BLUE

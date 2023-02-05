@@ -208,6 +208,8 @@ if __name__ == "__main__":
     sleep = [420, 1320, 540, 1320]
     meals = [Meals(570, 600, "Breakfast"), Meals(780, 840, "Lunch"), Meals(1200, 1230, "Dinner")]
     tasks = [Task(60, "to-do-2", 4), Task(120, "to-do-1", 1), Task(15, "to-do-last"), Task(200, "to-do-last"), Task(30, "to-do-3", 6)] 
+
+
     test_schedule = CalculateSchedule(events, tasks, meals, sleep)
-    test_schedule.create_schedule()    
+    test_schedule.create_schedule()
     CalendarView(test_schedule.output())
