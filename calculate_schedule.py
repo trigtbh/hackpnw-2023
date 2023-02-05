@@ -21,26 +21,27 @@ class CalculateSchedule:
         for event in self.events:
             self.add_immutable_events(event)
         self.add_meals()
+        self.add_tasks()
     
 
     def add_immutable_events(self, event):
         start_box = self.time_to_box_number(event.start_time)
         end_box = self.time_to_box_number(event.end_time)
-        print("start box is " + str(start_box))
-        print("end box is " + str(end_box))
+        # print("start box is " + str(start_box))
+        # print("end box is " + str(end_box))
         for box in range(start_box, end_box):
             self.week[event.day_of_week][box] = event
             
 
     def add_sleep(self):
         for i in range(5):
-            new_event1 = Sleep(i, 0000, self.sleep.wd_wakeup_time)
-            new_event2 = Sleep(i, self.sleep.wd_sleep_time, 1440)
+            new_event1 = Sleep(i, 0000, self.sleep[0])
+            new_event2 = Sleep(i, self.sleep[1], 1440)
             self.add_immutable_events(new_event1)
             self.add_immutable_events(new_event2)
         for i in range(5, 7):
-            new_event1 = Sleep(i, 0000, self.sleep.we_wakeup_time)
-            new_event2 = Sleep(i, self.sleep.we_sleep_time, 1440)
+            new_event1 = Sleep(i, 0000, self.sleep[2])
+            new_event2 = Sleep(i, self.sleep[3], 1440)
             self.add_immutable_events(new_event1)
             self.add_immutable_events(new_event2)
 
@@ -63,24 +64,26 @@ class CalculateSchedule:
         tasks_with_deadline = []
         tasks_without_deadline = []
         for t in self.tasks:
-            if t.day_of_week:
+            if t.deadline != None:
                 tasks_with_deadline.append(t)
             else:
                 tasks_without_deadline.append(t)
         # sort tasks_with_deadline by the deadline date
-        for i in range(len(tasks_with_deadline)):
+        for i in range(0, len(tasks_with_deadline)):
             earliest_deadline = i
             for t in range(i + 1, len(tasks_with_deadline)):
-                if tasks_with_deadline[t].day_of_week < tasks_with_deadline[earliest_deadline].day_of_week:
+                if tasks_with_deadline[t].deadline < tasks_with_deadline[earliest_deadline].deadline:
                     earliest_deadline = t
             second_deadline = tasks_with_deadline[i]
             tasks_with_deadline[i] = tasks_with_deadline[earliest_deadline]
             tasks_with_deadline[earliest_deadline] = second_deadline
         # input the task into the weekly schedule based on deadline
-        for t in range(len(tasks_with_deadline)):
+        for t in range(0, len(tasks_with_deadline)):
             num_boxes = self.time_to_box_number(tasks_with_deadline[t].time_needed)
-            for d in range(len(self.week)):
-                for time in range(len(self.week[d])):
+            for d in range(0, len(self.week)):
+                for time in range(0, len(self.week[d])):
+                    run_tasks_deadline = True
+                    initial_time = 0
                     if self.week[d][time] == None:
                         initial_time = time
                         time += 1
@@ -90,9 +93,41 @@ class CalculateSchedule:
                                 time += 1
                                 num_boxes -= 1
                             else:
-                                break
-                    for j in range(initial_time, time + 1):
-                        pass
+                                num_boxes = 0
+                                run_tasks_deadline = False
+                    else:
+                        run_tasks_deadline = False
+                    if run_tasks_deadline:
+                        tasks_with_deadline[t].start_time = initial_time * 30
+                        tasks_with_deadline[t].end_time = time * 30
+                        tasks_with_deadline[t].day_of_week = d
+                        for j in range(initial_time, time + 1):
+                            self.week[d][j] = tasks_with_deadline[t]
+        for t in range(len(tasks_without_deadline)):
+            num_boxes = self.time_to_box_number(tasks_without_deadline[t].time_needed)
+            for d in range(len(self.week)):
+                for time in range(len(self.week[d])):
+                    run_tasks_deadline = True
+                    initial_time = 0
+                    if self.week[d][time] == None:
+                        initial_time = time
+                        time += 1
+                        num_boxes -= 1
+                        while(num_boxes != 0):
+                            if self.week[d][time] == None:
+                                time += 1
+                                num_boxes -= 1
+                            else:
+                                num_boxes = 0
+                                run_tasks_deadline = False
+                    else:
+                        run_tasks_deadline = False
+                    if run_tasks_deadline:
+                        tasks_without_deadline[t].start_time = initial_time * 30
+                        tasks_without_deadline[t].end_time = time * 30
+                        tasks_with_deadline[t].day_of_week = d
+                        for j in range(initial_time, time + 1):
+                            self.week[d][j] = tasks_without_deadline[t]
             
 
     def time_to_box_number(self, time):
@@ -100,24 +135,31 @@ class CalculateSchedule:
     
     def output(self):
         answer_list = []
-        for day in self.weeks:
+        for day in self.week:
             for time in day:
                 if time:
                     answer_list.append(time)
         index = 1
         while(index < len(answer_list)):
-            if answer_list[index].name == answer_list[index-1].name:
+            if answer_list[index].name == answer_list[index-1].name and answer_list[index].start_time == answer_list[index-1].start_time:
                 answer_list.pop(index)
             else:
                 index += 1
         return answer_list
 
 
-# events = [ImmutableEvent(0, 900, 1000, "work"), ImmutableEvent(5, 1250, 1300, "work again")]
-# sleep = Sleep(540, 1320, 420, 1320)
-# meals = [Meals(570, 600, "Breakfast"), Meals(780, 840, "Lunch"), Meals(1200, 1230, "Dinner")]    
+if __name__ == "__main__":
+    events = [ImmutableEvent(0, 900, 1000, "work"), ImmutableEvent(5, 1250, 1300, "work again")]
+    sleep = [420, 1320, 540, 1320]
+    meals = [Meals(570, 600, "Breakfast"), Meals(780, 840, "Lunch"), Meals(1200, 1230, "Dinner")]
+    tasks = [Task(60, "to-do-2", 4), Task(120, "to-do-1", 1), Task(15, "to-do-last"), Task(200, "to-do-last"), Task(30, "to-do-3", 6)] 
 
 
-# test_schedule = CalculateSchedule(events, None, meals, sleep)
-# test_schedule.create_schedule()
-# print(str(test_schedule.schedule))
+    test_schedule = CalculateSchedule(events, tasks, meals, sleep)
+    test_schedule.create_schedule()
+    str(test_schedule.schedule)
+    test_schedule.schedule.print_everything()
+    output_test = test_schedule.output()
+    for i in output_test:
+        print(str(i.name) + " and the time is " + str(i.start_time) + " to " + str(i.end_time))
+

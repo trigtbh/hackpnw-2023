@@ -9,6 +9,7 @@ from tasks import Task
 from meals import Meals
 from sleep import Sleep
 from immutable_events import ImmutableEvent
+from calculate_schedule import CalculateSchedule
 
 class CalendarView:
     def __init__(self, events):
@@ -22,17 +23,21 @@ class CalendarView:
         self.y = 0
         self.drag = False
 
+        for item in self.events:
+            item.day_of_week += 1
+
         while True:
             self.update()
 
     def draw_events(self):
         for event in self.events:
+            
             if type(event) == ImmutableEvent:
                 color = settings.BLUE
             elif type(event) == Task:
                 color = settings.ORANGE
             elif type(event) == Meals:
-                color = settings.GREEN
+                color = settings.LIME
             elif type(event) == Sleep:
                 color = settings.PINK
 
@@ -51,7 +56,7 @@ class CalendarView:
             # create surface for the event
             #event_surface = pygame.Surface((self.width / 8 - 2, self.height * (end_height - start_height) - 2), pygame.SRCALPHA)
             event_surface = pygame.Surface((self.width / 8 - 1, self.height * (end_height - start_height) - 1))
-            event_surface.set_alpha(256 // 2)
+            event_surface.set_alpha(100)
             event_surface.fill(color)
             self.window.blit(event_surface, (1 + event.day_of_week * self.width / 8, 1 + self.height * start_height - self.y))
             
@@ -197,5 +202,12 @@ class CalendarView:
         pygame.display.update()
 
 
+
 if __name__ == "__main__":
-    CalendarView([])
+    events = [ImmutableEvent(0, 900, 1000, "work"), ImmutableEvent(5, 1250, 1300, "work again")]
+    sleep = [420, 1320, 540, 1320]
+    meals = [Meals(570, 600, "Breakfast"), Meals(780, 840, "Lunch"), Meals(1200, 1230, "Dinner")]
+    tasks = [Task(60, "to-do-2", 4), Task(120, "to-do-1", 1), Task(15, "to-do-last"), Task(200, "to-do-last"), Task(30, "to-do-3", 6)] 
+    test_schedule = CalculateSchedule(events, tasks, meals, sleep)
+    test_schedule.create_schedule()    
+    CalendarView(test_schedule.output())

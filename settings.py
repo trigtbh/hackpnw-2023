@@ -1,7 +1,7 @@
 import pygame
 pygame.font.init()
 
-WIDTH = 850
+WIDTH = 864
 HEIGHT = 600
 
 TITLE = "test"
@@ -28,8 +28,6 @@ BLUE = (102, 199, 244)
 ORANGE = (255, 151, 112)
 DARK_BLUE = (45, 48, 71)
 LIME = (144, 233, 58)
-LIGHTER_DARK_BLUE = (
-55, 58, 87
-)
+LIGHTER_DARK_BLUE = (55, 58, 87)
 
 BACKGROUND = DARK_BLUE

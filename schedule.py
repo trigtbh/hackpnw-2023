@@ -6,13 +6,13 @@ class Schedule:
             for j in range(48):
                 self.week[i].append(None)
         
-    def __str__(self):
+    def print_everything(self):
         date = 0
         for day in self.week:
             curtime = 0
             for time in day:
                 if time:
-                    print(str(date) + str(curtime) + time.name)
+                    print("Day is " + str(date) + " and time block is " + str(curtime) + " and the name is " + time.name)
                 # else:
                 #     print(str(day) + str(time) + "break")
                 curtime += 1
