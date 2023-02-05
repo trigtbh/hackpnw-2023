@@ -11,6 +11,7 @@ from sleep import Sleep
 from immutable_events import ImmutableEvent
 from calculate_schedule import CalculateSchedule
 
+
 class CalendarView:
     def __init__(self, events):
         self.width = settings.WIDTH
@@ -24,8 +25,10 @@ class CalendarView:
         self.drag = False
 
         for item in self.events:
+            if type(item) == Sleep:
+                print(item.day_of_week, item.start_time, item.end_time)
             item.day_of_week += 1
-
+            
         while True:
             self.update()
 
@@ -77,7 +80,7 @@ class CalendarView:
             # draw start time
             padding = 2.5
             text = settings.FONT_SMALL.render(start_time, True, settings.FONT_COLOR)
-            self.window.blit(text, (event.day_of_week * self.width / 8 + self.width / 16 - text.get_width() / 2, self.height * start_height - self.y + padding))
+            #self.window.blit(text, (event.day_of_week * self.width / 8 + self.width / 16 - text.get_width() / 2, self.height * start_height - self.y + padding))
             
             text = event.name
             # word wrap text if it is too long
@@ -99,10 +102,23 @@ class CalendarView:
             for i in range(len(lines)):
                 text = settings.FONT.render(lines[i], True, settings.FONT_COLOR)
                 self.window.blit(text, (event.day_of_week * self.width / 8 + self.width / 16 - text.get_width() / 2, self.height * (start_height + end_height) / 2 - self.y - text.get_height() * len(lines) / 2 + text.get_height() * i))
-                
+
+            # if the center text isn't clipping into the time text, draw the time text
+            #if self.height * (start_height + end_height) / 2 - self.y - text.get_height() * len(lines) / 2 > self.height * start_height - self.y + padding and self.height * (start_height + end_height) / 2 - self.y - text.get_height() * len(lines) / 2 < self.height * end_height - self.y - text.get_height() - padding:
+            
+            
+            starttime = settings.FONT_SMALL.render(start_time, True, settings.FONT_COLOR)
+            endtime = settings.FONT_SMALL.render(end_time, True, settings.FONT_COLOR)
+            # if the center text won't clip into the time text, draw the time text
+            if self.height * (start_height + end_height) / 2 - self.y - text.get_height() * len(lines) / 2 > self.height * start_height - self.y + padding + starttime.get_height() and self.height * (start_height + end_height) / 2 - self.y - text.get_height() * len(lines) / 2 < self.height * end_height - self.y - text.get_height() - padding - endtime.get_height():
+                # draw start time
+                self.window.blit(starttime, (event.day_of_week * self.width / 8 + self.width / 16 - starttime.get_width() / 2, self.height * start_height - self.y + padding))
+                # draw end time
+                self.window.blit(endtime, (event.day_of_week * self.width / 8 + self.width / 16 - endtime.get_width() / 2, self.height * end_height - self.y - endtime.get_height() - padding))
+            
                 # # draw end time
             text = settings.FONT_SMALL.render(end_time, True, settings.FONT_COLOR)
-            self.window.blit(text, (event.day_of_week * self.width / 8 + self.width / 16 - text.get_width() / 2, self.height * end_height - self.y - text.get_height() - padding))
+            #self.window.blit(text, (event.day_of_week * self.width / 8 + self.width / 16 - text.get_width() / 2, self.height * end_height - self.y - text.get_height() - padding))
 
 
 
@@ -204,12 +220,11 @@ class CalendarView:
 
 
 if __name__ == "__main__":
-    events = [ImmutableEvent(0, 900, 1000, "work"), ImmutableEvent(5, 1250, 1300, "work again")]
-    sleep = [420, 1320, 540, 1320]
-    meals = [Meals(570, 600, "Breakfast"), Meals(780, 840, "Lunch"), Meals(1200, 1230, "Dinner")]
-    tasks = [Task(60, "to-do-2", 4), Task(120, "to-do-1", 1), Task(15, "to-do-last"), Task(200, "to-do-last"), Task(30, "to-do-3", 6)] 
-
-
+    events = [ImmutableEvent(5, 1250, 1300, "work again"), ImmutableEvent(0, 480, 900, "School"), ImmutableEvent(1, 480, 900, "School"), ImmutableEvent(2, 480, 900, "School"), ImmutableEvent(3, 480, 900, "School"), ImmutableEvent(4, 480, 900, "School"), ]
+    sleep = [300, 1320, 390, 1320]
+    meals = [Meals(420, 450, "Breakfast"), Meals(780, 840, "Lunch"), Meals(1200, 1230, "Dinner")]
+    tasks = [Task(90, "edit essay", 4), Task(45, "math homework", 1), Task(120, "study for history exam"), Task(20, "email Mr. Stevens"), Task(60, "finish physics lab", 6), Task(80, "dance practice")] 
     test_schedule = CalculateSchedule(events, tasks, meals, sleep)
     test_schedule.create_schedule()
     CalendarView(test_schedule.output())
+

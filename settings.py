@@ -11,6 +11,7 @@ WHITE_SPACE = 0.05
 # open tt norms pro regular font and load it into pygame as a custom font
 FONT_MEDIUM = pygame.font.Font("TT Norms Pro Regular.otf", 20)
 FONT_A_BIT_SMALLER = pygame.font.Font("TT Norms Pro Regular.otf", 18)
+FONT_A_BIT_LARGER = pygame.font.Font("TT Norms Pro Regular.otf", 25)
 FONT_LARGE = pygame.font.Font("TT Norms Pro Regular.otf", 30)
 FONT_SMALL = pygame.font.Font("TT Norms Pro Regular.otf", 15)
 FONT_TITLE = pygame.font.Font("TT Norms Pro Bold.otf", 50)

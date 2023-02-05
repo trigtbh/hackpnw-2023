@@ -1,0 +1,1 @@
+ self.submit_button.inner_text = "Click to submit"

@@ -15,6 +15,9 @@ class Schedule:
                     print("Day is " + str(date) + " and time block is " + str(curtime) + " and the name is " + time.name)
                 # else:
                 #     print(str(day) + str(time) + "break")
+                
+                elif time == "Break":
+                    print("Time block is " + str(curtime) + "Break")
                 curtime += 1
             date += 1
   

@@ -3,7 +3,6 @@ from schedule import Schedule
 from meals import Meals
 from tasks import Task
 from sleep import Sleep
-from alert import Alert
 import copy
 
 
@@ -20,36 +19,92 @@ class CalculateSchedule:
 
     def create_schedule(self):
         self.add_sleep()
+        self.add_meals()
         for event in self.events:
             self.add_immutable_events(event)
-        self.add_meals()
+        
         self.add_tasks()
     
 
     def add_immutable_events(self, event):
-        start_box = self.time_to_box_number(event.start_time)
-        end_box = self.time_to_box_number(event.end_time)
-        # print("start box is " + str(start_box))
-        # print("end box is " + str(end_box))
-        starting_break_box = self.time_to_box_number(event.start_time - 10)
-        if(starting_break_box != start_box):
-            if(self.week[event.day_of_week][starting_break_box] == None):
-                self.week[event.day_of_week][starting_break_box] = "Break"
-            else:
-                new_alert = Alert(event, -1)
-                self.alerts.append(new_alert)
-        
-        ending_break_box = self.time_to_box_number(event.end_time + 10)
-        if(ending_break_box != end_box):
-            if(self.week[event.day_of_week][ending_break_box] == None):
-                self.week[event.day_of_week][ending_break_box] = "Break"
-            elif self.week[event.day_of_week][ending_break_box] != "Break":
-                new_alert = Alert(event, 1)
-                self.alerts.append(new_alert)
+        if not(event in self.week):
+            start_box = self.time_to_box_number(event.start_time, True)
+            end_box = self.time_to_box_number(event.end_time) 
+            # print("start box is " + str(start_box))
+            # print("end box is " + str(end_box))
+            if(type(event)!= Sleep):
+                starting_break_box = self.time_to_box_number(event.start_time - 10, True)
+                if(starting_break_box != start_box):
+                    if(self.week[event.day_of_week][starting_break_box] == None):
+                        self.week[event.day_of_week][starting_break_box] = "Break"
+                    else:
+                        if not(event in self.alerts):
+                            self.alerts.append(event)
+                
+                ending_break_box = self.time_to_box_number(event.end_time + 10) - 1
+                if(ending_break_box != end_box):
+                    if(self.week[event.day_of_week][ending_break_box] == None):
+                        self.week[event.day_of_week][ending_break_box] = "Break"
+                    elif self.week[event.day_of_week][ending_break_box] != "Break":
+                        if not(event in self.alerts):
+                            self.alerts.append(event)
 
-        for box in range(start_box, end_box):  
-            self.week[event.day_of_week][box] = event
+            else:
+                if(event.start_time == 0):
+                    ending_break_box = self.time_to_box_number(event.end_time + 10) - 1
+                    if(ending_break_box != end_box):
+                        if(self.week[event.day_of_week][ending_break_box] == None):
+                            self.week[event.day_of_week][ending_break_box] = "Break"
+                        elif self.week[event.day_of_week][ending_break_box] != "Break":
+                            if not(event in self.alerts):
+                                self.alerts.append(event)
+                else:
+                    starting_break_box = self.time_to_box_number(event.start_time - 10, True)
+                    if(starting_break_box != start_box):
+                        if(self.week[event.day_of_week][starting_break_box] == None):
+                            self.week[event.day_of_week][starting_break_box] = "Break"
+                        else:
+                            if not(event in self.alerts):
+                                self.alerts.append(event)
+
+            deal_with_meals = []
+
+            for box in range(start_box, end_box): 
+                if self.week[event.day_of_week][box] != None and type(self.week[event.day_of_week][box]) == Meals:
+                    deal_with_meals.append(self.week[event.day_of_week][box])
+
+            # print("THE DEAL WITH WITH MEALS IS: ")
+            # for i in deal_with_meals:
+            #     print(i.name)
+            #     print(i.day_of_week)
             
+            if(len(deal_with_meals) == 0):
+                for box in range(start_box, end_box):
+                    self.week[event.day_of_week][box] = event
+            
+            else:
+                new_events = [event]
+                for meal in deal_with_meals:
+                    og_event = new_events[len(new_events)-1]
+                    new_event = copy.deepcopy(og_event)
+                    new_event2 = copy.deepcopy(og_event)
+                    new_events.remove(og_event)
+                    new_event.end_time = meal.start_time
+                    new_events.append(new_event)
+                    new_event2.start_time = meal.end_time
+                    new_events.append(new_event2)
+                # for e in new_events:
+                #     print("DOW: " + str(e.day_of_week))
+                #     print("name: " + e.name)
+                #     print("time: " + str(e.start_time) + " to " + str(e.end_time))
+                for e in new_events:
+                    start_box = self.time_to_box_number(e.start_time, True)
+                    end_box = self.time_to_box_number(e.end_time)
+                    for box in range(start_box, end_box):
+                        self.week[e.day_of_week][box] = e
+                    
+                    
+                
 
     def add_sleep(self):
         for i in range(5):
@@ -126,12 +181,16 @@ class CalculateSchedule:
                         tasks_with_deadline[t].day_of_week = d
                         for j in range(initial_time, time + 1):
                             self.week[d][j] = tasks_with_deadline[t]
+                        box_num = self.time_to_box_number(tasks_with_deadline[t].end_time + 10) - 1
+                        if self.week[d][box_num] == None:
+                            self.week[d][box_num] = "Break"
                         break_from_first = True
                         break_from_second = True
                     if break_from_first == True:
                         break
                 if break_from_second == True:
                     break
+        # adding tasks without deadlines to the schedule
         for t in range(0, len(tasks_without_deadline)):
             break_from_first = False
             break_from_second = False
@@ -162,6 +221,9 @@ class CalculateSchedule:
                         tasks_without_deadline[t].day_of_week = d
                         for j in range(initial_time, time + 1):
                             self.week[d][j] = tasks_without_deadline[t]
+                        box_num = self.time_to_box_number(tasks_without_deadline[t].end_time + 10) - 1
+                        if self.week[d][box_num] == None:
+                            self.week[d][box_num] = "Break"
                         break_from_first = True
                         break_from_second = True
                     if break_from_first == True:
@@ -170,8 +232,13 @@ class CalculateSchedule:
                     break
             
 
-    def time_to_box_number(self, time):
-        return int(time / 30)
+    def time_to_box_number(self, time, round_down=False):
+        result = int(time / 30)
+        if time % 30 != 0:
+            if round_down:
+                return result
+            result += 1
+        return result
     
     def output(self):
         answer_list = []
@@ -181,7 +248,7 @@ class CalculateSchedule:
                     answer_list.append(time)
         index = 1
         while(index < len(answer_list)):
-            if answer_list[index].name == answer_list[index-1].name and answer_list[index].start_time == answer_list[index-1].start_time:
+            if answer_list[index].name == answer_list[index-1].name and answer_list[index].start_time == answer_list[index-1].start_time and answer_list[index].day_of_week == answer_list[index-1].day_of_week:
                 answer_list.pop(index)
             else:
                 index += 1
@@ -189,17 +256,15 @@ class CalculateSchedule:
 
 
 if __name__ == "__main__":
-    events = [ImmutableEvent(0, 900, 1000, "work"), ImmutableEvent(5, 1250, 1300, "work again")]
-    sleep = [420, 1320, 540, 1320]
-    meals = [Meals(570, 600, "Breakfast"), Meals(780, 840, "Lunch"), Meals(1200, 1230, "Dinner")]
-    tasks = [Task(60, "to-do-2", 4), Task(120, "to-do-1", 1), Task(15, "to-do-last-1"), Task(200, "to-do-last-2"), Task(30, "to-do-3", 6)] 
-
-
+    events = [ImmutableEvent(5, 1250, 1300, "work again"), ImmutableEvent(0, 480, 900, "School"), ImmutableEvent(1, 480, 900, "School"), ImmutableEvent(2, 480, 900, "School"), ImmutableEvent(3, 480, 900, "School"), ImmutableEvent(4, 480, 900, "School"), ]
+    sleep = [300, 1320, 390, 1320]
+    meals = [Meals(420, 450, "Breakfast"), Meals(780, 840, "Lunch"), Meals(1200, 1230, "Dinner")]
+    tasks = [Task(90, "edit essay", 4), Task(45, "math homework", 1), Task(120, "study for history exam"), Task(20, "email Mr. Stevens"), Task(60, "finish physics lab", 6), Task(80, "dance practice")] 
     test_schedule = CalculateSchedule(events, tasks, meals, sleep)
     test_schedule.create_schedule()
     str(test_schedule.schedule)
     test_schedule.schedule.print_everything()
     output_test = test_schedule.output()
     for i in output_test:
-        print(str(i.name) + " and the time is " + str(i.start_time) + " to " + str(i.end_time))
+        print(str(i.name) + " and the day is " + str(i.day_of_week) +  " and the time is " + str(i.start_time) + " to " + str(i.end_time))
 
