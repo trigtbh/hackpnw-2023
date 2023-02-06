@@ -41,21 +41,21 @@ class CalculateSchedule:
                         if not(event in self.alerts):
                             self.alerts.append(event)
                 
-                ending_break_box = self.time_to_box_number(event.end_time + 10) - 1
+                ending_break_box = self.time_to_box_number(event.end_time + 10) 
                 if(ending_break_box != end_box):
-                    if(self.week[event.day_of_week][ending_break_box] == None):
-                        self.week[event.day_of_week][ending_break_box] = "Break"
-                    elif self.week[event.day_of_week][ending_break_box] != "Break":
+                    if(self.week[event.day_of_week][ending_break_box - 1] == None):
+                        self.week[event.day_of_week][ending_break_box - 1] = "Break"
+                    elif self.week[event.day_of_week][ending_break_box - 1] != "Break":
                         if not(event in self.alerts):
                             self.alerts.append(event)
 
             else:
                 if(event.start_time == 0):
-                    ending_break_box = self.time_to_box_number(event.end_time + 10) - 1
+                    ending_break_box = self.time_to_box_number(event.end_time + 10) 
                     if(ending_break_box != end_box):
-                        if(self.week[event.day_of_week][ending_break_box] == None):
-                            self.week[event.day_of_week][ending_break_box] = "Break"
-                        elif self.week[event.day_of_week][ending_break_box] != "Break":
+                        if(self.week[event.day_of_week][ending_break_box -1] == None):
+                            self.week[event.day_of_week][ending_break_box -1] = "Break"
+                        elif self.week[event.day_of_week][ending_break_box -1] != "Break":
                             if not(event in self.alerts):
                                 self.alerts.append(event)
                 else:
@@ -179,7 +179,7 @@ class CalculateSchedule:
                         tasks_with_deadline[t].start_time = initial_time * 30
                         tasks_with_deadline[t].end_time = tasks_with_deadline[t].start_time + tasks_with_deadline[t].time_needed
                         tasks_with_deadline[t].day_of_week = d
-                        for j in range(initial_time, time + 1):
+                        for j in range(initial_time, time):
                             self.week[d][j] = tasks_with_deadline[t]
                         box_num = self.time_to_box_number(tasks_with_deadline[t].end_time + 10) - 1
                         if self.week[d][box_num] == None:
@@ -219,7 +219,7 @@ class CalculateSchedule:
                         tasks_without_deadline[t].start_time = initial_time * 30
                         tasks_without_deadline[t].end_time = tasks_without_deadline[t].start_time + tasks_without_deadline[t].time_needed
                         tasks_without_deadline[t].day_of_week = d
-                        for j in range(initial_time, time + 1):
+                        for j in range(initial_time, time):
                             self.week[d][j] = tasks_without_deadline[t]
                         box_num = self.time_to_box_number(tasks_without_deadline[t].end_time + 10) - 1
                         if self.week[d][box_num] == None:
@@ -254,17 +254,4 @@ class CalculateSchedule:
                 index += 1
         return answer_list
 
-
-if __name__ == "__main__":
-    events = [ImmutableEvent(5, 1250, 1300, "work again"), ImmutableEvent(0, 480, 900, "School"), ImmutableEvent(1, 480, 900, "School"), ImmutableEvent(2, 480, 900, "School"), ImmutableEvent(3, 480, 900, "School"), ImmutableEvent(4, 480, 900, "School"), ]
-    sleep = [300, 1320, 390, 1320]
-    meals = [Meals(420, 450, "Breakfast"), Meals(780, 840, "Lunch"), Meals(1200, 1230, "Dinner")]
-    tasks = [Task(90, "edit essay", 4), Task(45, "math homework", 1), Task(120, "study for history exam"), Task(20, "email Mr. Stevens"), Task(60, "finish physics lab", 6), Task(80, "dance practice")] 
-    test_schedule = CalculateSchedule(events, tasks, meals, sleep)
-    test_schedule.create_schedule()
-    str(test_schedule.schedule)
-    test_schedule.schedule.print_everything()
-    output_test = test_schedule.output()
-    for i in output_test:
-        print(str(i.name) + " and the day is " + str(i.day_of_week) +  " and the time is " + str(i.start_time) + " to " + str(i.end_time))
 

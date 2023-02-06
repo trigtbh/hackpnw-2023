@@ -30,6 +30,7 @@ ORANGE = (255, 151, 112)
 DARK_BLUE = (45, 48, 71)
 LIME = (144, 233, 58)
 LIGHTER_DARK_BLUE = (55, 58, 87)
+EVEN_LIGHTER_DARK_BLUE = (85, 88, 117)
 
 LIGHT_PINK = tuple(max(x + 20, 255) for x in PINK)
 LIGHT_BLUE = tuple(max(x + 20, 255) for x in BLUE)
